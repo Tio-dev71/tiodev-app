@@ -34,8 +34,8 @@ export function AdminSidebar() {
       <aside className={`fixed top-0 left-0 h-full w-64 bg-surface-900/95 backdrop-blur-xl border-r border-white/5 z-40 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="p-6">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold">P</div>
-            <div><div className="text-white font-semibold text-sm">Portfolio Store</div><div className="text-white/30 text-xs">Admin Panel</div></div>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold">T</div>
+            <div><div className="text-white font-semibold text-sm">Tiodev</div><div className="text-white/30 text-xs">Admin Panel</div></div>
           </Link>
         </div>
         <nav className="px-3 space-y-1">

@@ -1,11 +1,12 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, Mail, Lock, User, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { formatVND } from '@/lib/utils';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 const API_BASE = process.env.NEXT_PUBLIC_SUBSCRIPTION_API || 'https://api.tiodev.io.vn/v1';
 
@@ -21,7 +22,7 @@ const planPricing: Record<string, { monthly: number; yearly: number }> = {
   enterprise: { monthly: 3490000, yearly: 33504000 },
 };
 
-type Step = 'auth' | 'payment' | 'success';
+type Step = 'payment' | 'success';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -29,16 +30,15 @@ function CheckoutContent() {
   const planCode = searchParams.get('plan') || 'starter';
   const cycle = (searchParams.get('cycle') as 'monthly' | 'yearly') || 'monthly';
 
+  const { token, isAuthenticated, loading: authLoading, logout } = useAuth();
+
   const plan = planInfo[planCode] || planInfo.starter;
   const pricing = planPricing[planCode] || planPricing.starter;
   const amount = cycle === 'yearly' ? pricing.yearly : pricing.monthly;
 
-  const [step, setStep] = useState<Step>('auth');
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<Step>('payment');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [token, setToken] = useState('');
 
   // Payment state
   const [orderData, setOrderData] = useState<{
@@ -53,67 +53,16 @@ function CheckoutContent() {
     };
   } | null>(null);
 
-  // Auth form
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-
-  // Check existing token on mount
+  // Redirect to login if not authenticated
   useEffect(() => {
-    const saved = localStorage.getItem('sub_token');
-    if (saved) {
-      setToken(saved);
-      setStep('payment');
+    if (!authLoading && !isAuthenticated) {
+      router.push(`/account/login?redirect=${encodeURIComponent(`/subscription/checkout?plan=${planCode}&cycle=${cycle}`)}`);
     }
-  }, []);
-
-  // Handle auth
-  async function handleAuth(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.email || !form.password) {
-      setError('Vui lòng điền đầy đủ thông tin');
-      return;
-    }
-    if (authMode === 'register' && !form.name) {
-      setError('Vui lòng nhập tên');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const endpoint = authMode === 'register' ? '/auth/register' : '/auth/login';
-      const body = authMode === 'register'
-        ? { name: form.name, email: form.email, password: form.password }
-        : { email: form.email, password: form.password };
-
-      const res = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || 'Đã có lỗi xảy ra');
-        return;
-      }
-
-      const accessToken = data.accessToken;
-      localStorage.setItem('sub_token', accessToken);
-      localStorage.setItem('sub_user', JSON.stringify(data.user));
-      setToken(accessToken);
-      setStep('payment');
-    } catch {
-      setError('Không thể kết nối server. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [authLoading, isAuthenticated, router, planCode, cycle]);
 
   // Create order & get QR
   useEffect(() => {
-    if (step !== 'payment' || !token || orderData) return;
+    if (!isAuthenticated || !token || orderData) return;
 
     async function createOrder() {
       setLoading(true);
@@ -132,11 +81,8 @@ function CheckoutContent() {
 
         if (!res.ok) {
           if (res.status === 401) {
-            // Token expired, go back to auth
-            localStorage.removeItem('sub_token');
-            setToken('');
-            setStep('auth');
-            setError('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+            logout();
+            router.push(`/account/login?redirect=${encodeURIComponent(`/subscription/checkout?plan=${planCode}&cycle=${cycle}`)}`);
             return;
           }
           setError(data.message || 'Không thể tạo đơn hàng');
@@ -155,7 +101,7 @@ function CheckoutContent() {
     }
 
     createOrder();
-  }, [step, token, planCode, cycle, orderData]);
+  }, [isAuthenticated, token, planCode, cycle, orderData, logout, router]);
 
   // Poll for payment status
   const pollPayment = useCallback(async () => {
@@ -189,6 +135,14 @@ function CheckoutContent() {
 
     return () => clearInterval(interval);
   }, [step, orderData, pollPayment]);
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen pt-28 pb-20 px-4 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-4 relative">
@@ -231,24 +185,24 @@ function CheckoutContent() {
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {(['auth', 'payment', 'success'] as Step[]).map((s, i) => (
+          {(['payment', 'success'] as Step[]).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 step === s
                   ? 'bg-gradient-to-r from-primary-500 to-cyan-500 text-white'
-                  : i < ['auth', 'payment', 'success'].indexOf(step)
+                  : i < ['payment', 'success'].indexOf(step)
                   ? 'bg-primary-500/20 text-primary-400'
                   : 'bg-white/5 text-white/30'
               }`}>
-                {i < ['auth', 'payment', 'success'].indexOf(step) ? (
+                {i < ['payment', 'success'].indexOf(step) ? (
                   <CheckCircle2 className="w-4 h-4" />
                 ) : (
                   i + 1
                 )}
               </div>
-              {i < 2 && (
+              {i < 1 && (
                 <div className={`w-12 h-0.5 rounded-full ${
-                  i < ['auth', 'payment', 'success'].indexOf(step)
+                  i < ['payment', 'success'].indexOf(step)
                     ? 'bg-primary-500/50'
                     : 'bg-white/10'
                 }`} />
@@ -258,117 +212,7 @@ function CheckoutContent() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1: Auth */}
-          {step === 'auth' && (
-            <motion.div
-              key="auth"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="glass rounded-3xl p-8"
-            >
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {authMode === 'register' ? 'Tạo tài khoản' : 'Đăng nhập'}
-              </h2>
-              <p className="text-white/40 text-sm mb-8">
-                {authMode === 'register'
-                  ? 'Đăng ký để bắt đầu dùng thử 3 ngày miễn phí'
-                  : 'Đăng nhập vào tài khoản của bạn'}
-              </p>
-
-              <form onSubmit={handleAuth} className="space-y-5">
-                {authMode === 'register' && (
-                  <div>
-                    <label className="text-xs text-white/40 mb-1.5 block font-medium">Họ tên</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                      <input
-                        type="text"
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-transparent transition-all"
-                        placeholder="Nguyễn Văn A"
-                        id="sub-name"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-xs text-white/40 mb-1.5 block font-medium">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-transparent transition-all"
-                      placeholder="you@email.com"
-                      id="sub-email"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-white/40 mb-1.5 block font-medium">Mật khẩu</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="w-full pl-11 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-transparent transition-all"
-                      placeholder="••••••••"
-                      id="sub-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-2xl hover:from-primary-500 hover:to-primary-400 transition-all glow disabled:opacity-50"
-                  id="sub-auth-submit"
-                >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : authMode === 'register' ? (
-                    'Đăng ký & Dùng thử miễn phí'
-                  ) : (
-                    'Đăng nhập'
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => {
-                    setAuthMode(authMode === 'register' ? 'login' : 'register');
-                    setError('');
-                  }}
-                  className="text-sm text-white/40 hover:text-white transition-colors"
-                >
-                  {authMode === 'register' ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 2: Payment QR */}
+          {/* Step 1: Payment QR */}
           {step === 'payment' && (
             <motion.div
               key="payment"
@@ -464,7 +308,7 @@ function CheckoutContent() {
             </motion.div>
           )}
 
-          {/* Step 3: Success */}
+          {/* Step 2: Success */}
           {step === 'success' && (
             <motion.div
               key="success"
@@ -504,10 +348,16 @@ function CheckoutContent() {
 
               <div className="space-y-3">
                 <Link
-                  href="/pricing"
+                  href="/account"
                   className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-2xl hover:from-primary-500 hover:to-primary-400 transition-all glow"
                 >
-                  Quay lại trang chủ
+                  Xem tài khoản của tôi
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="block w-full py-3 text-center text-white/40 hover:text-white text-sm transition-colors"
+                >
+                  Quay lại bảng giá
                 </Link>
               </div>
             </motion.div>

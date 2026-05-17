@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,15 +14,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio Store — Coding & Crypto",
-    template: "%s | Portfolio Store",
+    default: "Tiodev — Coding & Crypto",
+    template: "%s | Tiodev",
   },
   description:
     "Nơi chứa đựng của tôi",
   keywords: ["coding", "crypto", "portfolio", "store"],
   authors: [{ name: "Tio" }],
   openGraph: {
-    title: "Portfolio Store — Coding & Crypto",
+    title: "Tiodev — Coding & Crypto",
     description: "Nơi chứa đựng của tôi",
     type: "website",
     locale: "vi_VN",
@@ -45,11 +46,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark`}>
       <body className="noise-bg font-sans">
-        <LanguageProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
