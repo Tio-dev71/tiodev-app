@@ -20,6 +20,7 @@ import {
   CalendarDays,
   Shield,
   RefreshCw,
+  Download,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -296,6 +297,20 @@ export default function AccountDashboard() {
                         <code className="text-sm text-primary-400 font-mono break-all block bg-black/20 rounded-lg p-3">
                           {sub.licenseKey}
                         </code>
+                        
+                        {(sub.status === 'active' || sub.status === 'trial') && (
+                          <div className="mt-3">
+                            <a
+                              href="https://github.com/Tio-dev71/9Meta/releases/latest"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-xs font-semibold rounded-lg hover:bg-white/20 transition-all w-full justify-center"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              Tải phần mềm 9Meta
+                            </a>
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -1,12 +1,13 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { formatVND } from '@/lib/utils';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useCartStore } from '@/store/cart-store';
 
 const API_BASE = process.env.NEXT_PUBLIC_SUBSCRIPTION_API || 'https://api.tiodev.io.vn/v1';
 
@@ -31,6 +32,7 @@ function CheckoutContent() {
   const cycle = (searchParams.get('cycle') as 'monthly' | 'yearly') || 'monthly';
 
   const { token, isAuthenticated, loading: authLoading, logout } = useAuth();
+  const { affiliateCode } = useCartStore();
 
   const plan = planInfo[planCode] || planInfo.starter;
   const pricing = planPricing[planCode] || planPricing.starter;
@@ -74,7 +76,7 @@ function CheckoutContent() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ planCode, cycle }),
+          body: JSON.stringify({ planCode, cycle, affiliateCode }),
         });
 
         const data = await res.json();
@@ -347,9 +349,18 @@ function CheckoutContent() {
               </div>
 
               <div className="space-y-3">
+                <a
+                  href="https://github.com/Tio-dev71/9Meta/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-2xl hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-500/25 glow"
+                >
+                  <Download className="w-5 h-5" />
+                  Tải xuống ứng dụng 9Meta
+                </a>
                 <Link
                   href="/account"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-2xl hover:from-primary-500 hover:to-primary-400 transition-all glow"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-white/10 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all"
                 >
                   Xem tài khoản của tôi
                 </Link>

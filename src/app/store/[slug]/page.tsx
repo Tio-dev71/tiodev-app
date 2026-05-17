@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { ShoppingCart, ArrowLeft, Check, Star, Package } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cart-store';
 import { formatPrice } from '@/lib/utils';
@@ -26,7 +26,17 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const searchParams = useSearchParams();
+  const setAffiliateCode = useCartStore((s) => s.setAffiliateCode);
   const addItem = useCartStore((s) => s.addItem);
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setAffiliateCode(ref, 0);
+      // Optional: you could save this to localStorage directly or use the store
+    }
+  }, [searchParams, setAffiliateCode]);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -75,9 +85,17 @@ export default function ProductDetailPage() {
                 <button onClick={() => setQuantity(quantity + 1)} className="px-4 py-2 text-white/60 hover:text-white hover:bg-white/5 transition-colors">+</button>
               </div>
             </div>
-            <button onClick={handleAddToCart} disabled={addedToCart} className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg transition-all duration-300 ${addedToCart ? 'bg-emerald-600' : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 glow'}`} id="add-to-cart-detail">
-              {addedToCart ? <><Check className="w-5 h-5" /> Added!</> : <><ShoppingCart className="w-5 h-5" /> Add to Cart — {formatPrice(product.price * quantity)}</>}
-            </button>
+            
+            {(product.slug.includes('9meta') || product.slug.includes('tools-auto-post')) ? (
+              <Link href="/pricing" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-500 hover:to-purple-400 shadow-lg shadow-violet-500/25 transition-all duration-300 glow">
+                <Star className="w-5 h-5" />
+                Xem Bảng Giá Subscription 9Meta
+              </Link>
+            ) : (
+              <button onClick={handleAddToCart} disabled={addedToCart} className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg transition-all duration-300 ${addedToCart ? 'bg-emerald-600' : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 glow'}`} id="add-to-cart-detail">
+                {addedToCart ? <><Check className="w-5 h-5" /> Added!</> : <><ShoppingCart className="w-5 h-5" /> Add to Cart — {formatPrice(product.price * quantity)}</>}
+              </button>
+            )}
           </motion.div>
         </div>
       </div>
