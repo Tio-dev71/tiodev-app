@@ -23,7 +23,7 @@ const planPricing: Record<string, { monthly: number; yearly: number }> = {
   enterprise: { monthly: 3490000, yearly: 33504000 },
 };
 
-type Step = 'payment' | 'success';
+type Step = 'review' | 'payment' | 'success';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -38,7 +38,8 @@ function CheckoutContent() {
   const pricing = planPricing[planCode] || planPricing.starter;
   const amount = cycle === 'yearly' ? pricing.yearly : pricing.monthly;
 
-  const [step, setStep] = useState<Step>('payment');
+  const [step, setStep] = useState<Step>('review');
+  const [refCodeInput, setRefCodeInput] = useState(affiliateCode || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,48 +63,46 @@ function CheckoutContent() {
     }
   }, [authLoading, isAuthenticated, router, planCode, cycle]);
 
-  // Create order & get QR
-  useEffect(() => {
+  // Create order
+  async function handleCreateOrder() {
     if (!isAuthenticated || !token || orderData) return;
+    setStep('payment');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/billing/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ planCode, cycle, affiliateCode: refCodeInput || undefined }),
+      });
 
-    async function createOrder() {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch(`${API_BASE}/billing/create-order`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ planCode, cycle, affiliateCode }),
-        });
+      const data = await res.json();
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            logout();
-            router.push(`/account/login?redirect=${encodeURIComponent(`/subscription/checkout?plan=${planCode}&cycle=${cycle}`)}`);
-            return;
-          }
-          setError(data.message || 'Không thể tạo đơn hàng');
+      if (!res.ok) {
+        if (res.status === 401) {
+          logout();
+          router.push(`/account/login?redirect=${encodeURIComponent(`/subscription/checkout?plan=${planCode}&cycle=${cycle}`)}`);
           return;
         }
-
-        setOrderData({
-          code: data.order.code,
-          vietqr: data.vietqr,
-        });
-      } catch {
-        setError('Không thể kết nối server.');
-      } finally {
-        setLoading(false);
+        setError(data.message || 'Không thể tạo đơn hàng');
+        setStep('review'); // Go back on error
+        return;
       }
-    }
 
-    createOrder();
-  }, [isAuthenticated, token, planCode, cycle, orderData, logout, router]);
+      setOrderData({
+        code: data.order.code,
+        vietqr: data.vietqr,
+      });
+    } catch {
+      setError('Không thể kết nối server.');
+      setStep('review');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Poll for payment status
   const pollPayment = useCallback(async () => {
@@ -187,24 +186,24 @@ function CheckoutContent() {
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {(['payment', 'success'] as Step[]).map((s, i) => (
+          {(['review', 'payment', 'success'] as Step[]).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 step === s
                   ? 'bg-gradient-to-r from-primary-500 to-cyan-500 text-white'
-                  : i < ['payment', 'success'].indexOf(step)
+                  : i < ['review', 'payment', 'success'].indexOf(step)
                   ? 'bg-primary-500/20 text-primary-400'
                   : 'bg-white/5 text-white/30'
               }`}>
-                {i < ['payment', 'success'].indexOf(step) ? (
+                {i < ['review', 'payment', 'success'].indexOf(step) ? (
                   <CheckCircle2 className="w-4 h-4" />
                 ) : (
                   i + 1
                 )}
               </div>
-              {i < 1 && (
+              {i < 2 && (
                 <div className={`w-12 h-0.5 rounded-full ${
-                  i < ['payment', 'success'].indexOf(step)
+                  i < ['review', 'payment', 'success'].indexOf(step)
                     ? 'bg-primary-500/50'
                     : 'bg-white/10'
                 }`} />
@@ -214,6 +213,48 @@ function CheckoutContent() {
         </div>
 
         <AnimatePresence mode="wait">
+                    {/* Step 0: Review */}
+          {step === 'review' && (
+            <motion.div
+              key="review"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="glass rounded-3xl p-8"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">Xác nhận thanh toán</h2>
+              
+              <div className="space-y-4 mb-8">
+                <div>
+                  <label className="block text-white/60 text-sm mb-2">Mã giới thiệu / Affiliate Code (Tuỳ chọn)</label>
+                  <input
+                    type="text"
+                    value={refCodeInput}
+                    onChange={(e) => setRefCodeInput(e.target.value)}
+                    placeholder="Nhập mã giới thiệu..."
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                  />
+                  <p className="text-white/30 text-xs mt-2">Nếu bạn được ai đó giới thiệu, hãy nhập mã của họ vào đây.</p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl mb-4">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleCreateOrder}
+                disabled={loading}
+                className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-2xl hover:from-primary-500 hover:to-primary-400 transition-all shadow-lg shadow-primary-500/25 glow flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Tiếp tục thanh toán'}
+              </button>
+            </motion.div>
+          )}
+
           {/* Step 1: Payment QR */}
           {step === 'payment' && (
             <motion.div
