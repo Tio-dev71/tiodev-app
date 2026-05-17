@@ -14,15 +14,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio Store — Coding & Crypto",
-    template: "%s | Portfolio Store",
+    default: "Tiodev — Coding & Crypto",
+    template: "%s | Tiodev",
   },
   description:
     "Nơi chứa đựng của tôi",
   keywords: ["coding", "crypto", "portfolio", "store"],
   authors: [{ name: "Tio" }],
   openGraph: {
-    title: "Portfolio Store — Coding & Crypto",
+    title: "Tiodev — Coding & Crypto",
     description: "Nơi chứa đựng của tôi",
     type: "website",
     locale: "vi_VN",
