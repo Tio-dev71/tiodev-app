@@ -74,13 +74,18 @@ export default function AdminProductsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this product?')) return;
+    if (!confirm('Xóa vĩnh viễn sản phẩm này?')) return;
     try {
-      await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
-      fetchProducts();
-      setToast({ message: 'Product deleted', type: 'success' });
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchProducts();
+        setToast({ message: 'Product deleted permanently', type: 'success' });
+      } else {
+        const data = await res.json();
+        setToast({ message: data.error || 'Failed to delete product', type: 'error' });
+      }
     }
-    catch (e) { console.error(e); }
+    catch (e) { console.error(e); setToast({ message: 'Failed to delete product', type: 'error' }); }
   }
 
   async function handleToggleActive(p: Product) {
