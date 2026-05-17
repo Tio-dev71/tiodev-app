@@ -163,6 +163,24 @@ function CheckoutContent() {
 
       const data = await res.json();
       if (data.status === 'paid') {
+        // Record subscription order in web database for affiliate tracking
+        try {
+          await fetch('/api/subscription-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              planName: plan.name,
+              cycle,
+              amount,
+              affiliateCode: refCodeInput || undefined,
+              customerName: 'Subscription User',
+              customerEmail: '',
+            }),
+          });
+        } catch {
+          // Non-critical: don't block success flow
+        }
+
         setStep('success');
         return true;
       }
@@ -170,7 +188,7 @@ function CheckoutContent() {
       // ignore polling errors
     }
     return false;
-  }, [orderData, token]);
+  }, [orderData, token, plan.name, cycle, amount, refCodeInput]);
 
   useEffect(() => {
     if (step !== 'payment' || !orderData) return;
