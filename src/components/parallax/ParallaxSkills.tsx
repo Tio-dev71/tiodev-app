@@ -113,7 +113,7 @@ export function ParallaxSkills() {
             className="lg:col-span-5 glass rounded-2xl p-8 border border-white/5 flex flex-col justify-center"
           >
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-               {t.skills.highlightsTitle}
+              {t.skills.highlightsTitle}
             </h3>
             <div className="space-y-4">
               {t.skills.highlightPoints.map((point, i) => (

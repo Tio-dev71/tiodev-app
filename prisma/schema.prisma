@@ -110,3 +110,10 @@ model Blog {
   @@index([slug])
   @@index([category])
 }
+
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  label     String?
+  updatedAt DateTime @updatedAt
+}

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, Menu, X, BarChart3, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, Menu, X, BarChart3, BookOpen, Settings } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/admin/blogs', icon: BookOpen, label: 'Blogs' },
   { href: '/admin/affiliates', icon: Users, label: 'Affiliates' },
+  { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function AdminSidebar() {

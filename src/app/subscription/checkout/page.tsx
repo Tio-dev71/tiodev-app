@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { formatVND } from '@/lib/utils';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useCartStore } from '@/store/cart-store';
+import QRCodeLib from 'qrcode';
 
 const API_BASE = process.env.NEXT_PUBLIC_SUBSCRIPTION_API || 'https://api.tiodev.io.vn/v1';
 
@@ -55,6 +56,51 @@ function CheckoutContent() {
       description: string;
     };
   } | null>(null);
+
+  const [qrFallbackUrl, setQrFallbackUrl] = useState<string | null>(null);
+  const [qrImageError, setQrImageError] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState('');
+
+  // Generate local QR code fallback when orderData is set
+  useEffect(() => {
+    if (!orderData) return;
+
+    async function generateLocalQR() {
+      try {
+        // Build a simple VietQR-compatible content string
+        const bankId = orderData!.vietqr.bankId || '970422';
+        const accountNo = orderData!.vietqr.accountNo || '';
+        const amount = orderData!.vietqr.amount;
+        const description = orderData!.vietqr.description || '';
+
+        // Build VietQR deep link URL format for banking apps
+        const qrContent = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}`;
+
+        const dataUrl = await QRCodeLib.toDataURL(qrContent, {
+          width: 400,
+          margin: 2,
+          color: { dark: '#000000', light: '#FFFFFF' },
+        });
+        setQrFallbackUrl(dataUrl);
+      } catch (err) {
+        console.error('Failed to generate local QR:', err);
+      }
+    }
+
+    generateLocalQR();
+  }, [orderData]);
+
+  // Fetch download URL from settings
+  useEffect(() => {
+    if (step === 'success') {
+      fetch('/api/settings/9meta_download_url')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.value) setDownloadUrl(data.value);
+        })
+        .catch(() => {});
+    }
+  }, [step]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -284,9 +330,10 @@ function CheckoutContent() {
                   {/* QR Code */}
                   <div className="bg-white rounded-2xl p-4 mb-6 mx-auto w-fit">
                     <img
-                      src={orderData.vietqr.qrImageUrl}
+                      src={qrImageError && qrFallbackUrl ? qrFallbackUrl : orderData.vietqr.qrImageUrl}
                       alt="VietQR Payment"
                       className="w-64 h-64 object-contain"
+                      onError={() => setQrImageError(true)}
                     />
                   </div>
 
@@ -390,15 +437,17 @@ function CheckoutContent() {
               </div>
 
               <div className="space-y-3">
-                <a
-                  href="https://github.com/Tio-dev71/9Meta/releases/latest"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-2xl hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-500/25 glow"
-                >
-                  <Download className="w-5 h-5" />
-                  Tải xuống ứng dụng 9Meta
-                </a>
+                {downloadUrl && (
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-2xl hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-500/25 glow"
+                  >
+                    <Download className="w-5 h-5" />
+                    Tải xuống ứng dụng 9Meta
+                  </a>
+                )}
                 <Link
                   href="/account"
                   className="flex items-center justify-center gap-2 w-full py-4 bg-white/10 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all"
