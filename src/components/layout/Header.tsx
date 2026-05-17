@@ -12,6 +12,7 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 const navLinks = [
   { href: '/', key: 'home' },
   { href: '/store', key: 'store' },
+  { href: '/pricing', key: 'pricing' },
   { href: '/blog', key: 'blog' },
 ] as const;
 

@@ -10,6 +10,7 @@ type Dictionary = {
     home: string;
     store: string;
     blog: string;
+    pricing: string;
     cart: string;
     admin: string;
     navigation: string;
@@ -52,6 +53,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       home: 'Trang chủ',
       store: 'Cửa hàng',
       blog: 'Blog',
+      pricing: 'Bảng giá',
       cart: 'Giỏ hàng',
       admin: 'Quản trị',
       navigation: 'Điều hướng',
@@ -102,6 +104,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       home: 'Home',
       store: 'Store',
       blog: 'Blog',
+      pricing: 'Pricing',
       cart: 'Shopping Cart',
       admin: 'Admin',
       navigation: 'Navigation',
