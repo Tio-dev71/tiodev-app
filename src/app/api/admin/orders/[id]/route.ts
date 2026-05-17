@@ -1,6 +1,7 @@
 // Admin Order Update API - PUT to update status
 import { prisma } from '@/lib/prisma';
 import { appendOrderToSheet } from '@/lib/google-sheets';
+import { sendOrderConfirmation } from '@/lib/email';
 import { NextResponse } from 'next/server';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +32,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         status: 'PAID',
         createdAt: order.createdAt.toISOString(),
       });
+
+      await sendOrderConfirmation({
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        orderNumber: order.orderNumber,
+        items: order.items.map((i) => ({
+          name: i.product.name,
+          quantity: i.quantity,
+          price: i.price,
+          downloadLink: i.product.downloadLink,
+        })),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+      });
+
       await prisma.order.update({ where: { id }, data: { syncedToSheets: true } });
     }
 

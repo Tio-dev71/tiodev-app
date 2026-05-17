@@ -18,6 +18,7 @@ interface OrderEmailData {
     name: string;
     quantity: number;
     price: number;
+    downloadLink?: string | null;
   }>;
   subtotal: number;
   discount: number;
@@ -89,6 +90,19 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                 <span style="color: #111827; font-weight: 700; font-size: 18px;">$${data.total.toFixed(2)}</span>
               </div>
             </div>
+
+            ${data.items.some((item) => item.downloadLink) ? `
+            <div style="background: #ecfeff; border: 1px solid #a5f3fc; padding: 16px; border-radius: 8px; margin-top: 20px;">
+              <h3 style="margin: 0 0 10px; color: #0f766e; font-size: 16px;">Your Download Links</h3>
+              <ul style="margin: 0; padding-left: 18px;">
+                ${data.items
+                  .filter((item) => item.downloadLink)
+                  .map(
+                    (item) => `<li style="margin-bottom: 6px;"><a href="${item.downloadLink}" style="color: #0e7490; text-decoration: none;" target="_blank" rel="noopener noreferrer">${item.name} - Download App</a></li>`
+                  )
+                  .join('')}
+              </ul>
+            </div>` : ''}
             
             <p style="color: #6b7280; font-size: 14px; margin-top: 30px; text-align: center;">
               Payment via ${data.paymentMethod === 'stripe' ? 'Credit Card' : 'Bank Transfer (VietQR)'}

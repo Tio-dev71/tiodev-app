@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/utils';
 interface Product {
   id: string; name: string; slug: string; description: string; price: number;
   image: string; category: string | null; featured: boolean; active: boolean;
+  downloadLink: string | null;
 }
 
 export default function AdminProductsPage() {
@@ -19,7 +20,7 @@ export default function AdminProductsPage() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', category: '', featured: false });
+  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '' });
 
   useEffect(() => { fetchProducts(); }, []);
 
@@ -41,13 +42,13 @@ export default function AdminProductsPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: '', description: '', price: '', image: '', category: '', featured: false });
+    setForm({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '' });
     setShowModal(true);
   }
 
   function openEdit(p: Product) {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, category: p.category || '', featured: p.featured });
+    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, category: p.category || '', featured: p.featured, downloadLink: p.downloadLink || '' });
     setShowModal(true);
   }
 
@@ -57,7 +58,7 @@ export default function AdminProductsPage() {
     try {
       const url = editing ? `/api/admin/products/${editing.id}` : '/api/admin/products';
       const method = editing ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price: parseFloat(form.price) }) });
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price: parseFloat(form.price), downloadLink: form.downloadLink || null }) });
       if (res.ok) {
         setShowModal(false);
         fetchProducts();
@@ -264,6 +265,16 @@ export default function AdminProductsPage() {
                   </div>
                   <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50" placeholder="https://..." />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-white/40 mb-1 block">Download Link</label>
+                <input
+                  value={form.downloadLink}
+                  onChange={e => setForm({...form, downloadLink: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                  placeholder="https://download.yourapp.com/file.exe"
+                />
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.featured} onChange={e => setForm({...form, featured: e.target.checked})} className="rounded" /><span className="text-sm text-white/60">Featured product</span></label>

@@ -30,6 +30,7 @@ export async function POST(req: Request) {
         image: body.image || '',
         category: body.category || null,
         featured: body.featured || false,
+        downloadLink: body.downloadLink || null,
       },
     });
     return NextResponse.json(product, { status: 201 });

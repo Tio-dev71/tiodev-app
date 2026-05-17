@@ -57,7 +57,12 @@ export async function POST(req: Request) {
         customerName: order.customerName,
         customerEmail: order.customerEmail,
         orderNumber: order.orderNumber,
-        items: order.items.map((i) => ({ name: i.product.name, quantity: i.quantity, price: i.price })),
+        items: order.items.map((i) => ({
+          name: i.product.name,
+          quantity: i.quantity,
+          price: i.price,
+          downloadLink: i.product.downloadLink,
+        })),
         subtotal: order.subtotal,
         discount: order.discount,
         total: order.total,

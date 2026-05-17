@@ -17,6 +17,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         image: body.image || '',
         category: body.category || null,
         featured: body.featured || false,
+        downloadLink: body.downloadLink || null,
       },
     });
     return NextResponse.json(product);
@@ -28,7 +29,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    await prisma.product.update({ where: { id }, data: { active: false } });
+    await prisma.product.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
