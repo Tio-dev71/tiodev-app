@@ -63,12 +63,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        return { success: false, message: data.message || 'Đăng nhập thất bại' };
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          return { success: false, message: data.message || 'Đăng nhập thất bại' };
+        } catch {
+          return { success: false, message: `Lỗi Server: ${res.status} ${res.statusText}` };
+        }
       }
 
+      const data = await res.json();
       const accessToken = data.accessToken;
       localStorage.setItem('sub_token', accessToken);
       localStorage.setItem('sub_user', JSON.stringify(data.user));
@@ -89,12 +94,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        return { success: false, message: data.message || 'Đăng ký thất bại' };
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          return { success: false, message: data.message || 'Đăng ký thất bại' };
+        } catch {
+          if (res.status === 404) return { success: false, message: 'API Đăng ký chưa được triển khai trên Server (404)' };
+          return { success: false, message: `Lỗi Server: ${res.status} ${res.statusText}` };
+        }
       }
 
+      const data = await res.json();
       const accessToken = data.accessToken;
       localStorage.setItem('sub_token', accessToken);
       localStorage.setItem('sub_user', JSON.stringify(data.user));
