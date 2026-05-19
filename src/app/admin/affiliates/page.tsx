@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, X, Loader2, Copy, Check, Trash2 } from 'lucide-react';
+import { Plus, X, Loader2, Copy, Check, Trash2, Link as LinkIcon } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
 interface Affiliate {
@@ -41,6 +41,13 @@ export default function AdminAffiliatesPage() {
     setTimeout(() => setCopied(''), 2000);
   }
 
+  function copyLink(code: string) {
+    const url = `${window.location.origin}/store?ref=${code}`;
+    navigator.clipboard.writeText(url);
+    setCopied(`link-${code}`);
+    setTimeout(() => setCopied(''), 2000);
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Xóa mã affiliate này?')) return;
     try {
@@ -73,8 +80,11 @@ export default function AdminAffiliatesPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold font-mono text-primary-400">{a.code}</span>
-                  <button onClick={() => copyCode(a.code)} className="text-white/20 hover:text-white transition-colors">
+                  <button onClick={() => copyCode(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy code">
                     {copied === a.code ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                  <button onClick={() => copyLink(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy link">
+                    {copied === `link-${a.code}` ? <Check className="w-4 h-4 text-emerald-400" /> : <LinkIcon className="w-4 h-4" />}
                   </button>
                   <button onClick={() => handleDelete(a.id)} className="text-white/20 hover:text-red-400 transition-colors" title="Xóa mã này">
                     <Trash2 className="w-4 h-4" />

@@ -44,6 +44,13 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Sync refCodeInput if affiliateCode becomes available from store (e.g. from URL)
+  useEffect(() => {
+    if (affiliateCode && !refCodeInput) {
+      setRefCodeInput(affiliateCode);
+    }
+  }, [affiliateCode]);
+
   // Payment state
   const [orderData, setOrderData] = useState<{
     code: string;

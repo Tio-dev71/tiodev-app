@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AffiliateProvider } from "@/components/providers/AffiliateProvider";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,6 +51,9 @@ export default function RootLayout({
         <AuthProvider>
           <LanguageProvider>
             <Header />
+            <Suspense fallback={null}>
+              <AffiliateProvider />
+            </Suspense>
             <main className="min-h-screen">{children}</main>
             <Footer />
           </LanguageProvider>
