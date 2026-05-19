@@ -48,6 +48,13 @@ export default function AdminAffiliatesPage() {
     setTimeout(() => setCopied(''), 2000);
   }
 
+  function copy9MetaLink(code: string) {
+    const url = `${window.location.origin}/pricing?ref=${code}`;
+    navigator.clipboard.writeText(url);
+    setCopied(`9meta-${code}`);
+    setTimeout(() => setCopied(''), 2000);
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Xóa mã affiliate này?')) return;
     try {
@@ -83,8 +90,11 @@ export default function AdminAffiliatesPage() {
                   <button onClick={() => copyCode(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy code">
                     {copied === a.code ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   </button>
-                  <button onClick={() => copyLink(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy link">
+                  <button onClick={() => copyLink(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy Store link">
                     {copied === `link-${a.code}` ? <Check className="w-4 h-4 text-emerald-400" /> : <LinkIcon className="w-4 h-4" />}
+                  </button>
+                  <button onClick={() => copy9MetaLink(a.code)} className="text-white/20 hover:text-white transition-colors" title="Copy 9Meta link">
+                    {copied === `9meta-${a.code}` ? <Check className="w-4 h-4 text-emerald-400" /> : <span className="text-xs font-bold font-mono px-1 rounded bg-white/10">9M</span>}
                   </button>
                   <button onClick={() => handleDelete(a.id)} className="text-white/20 hover:text-red-400 transition-colors" title="Xóa mã này">
                     <Trash2 className="w-4 h-4" />
