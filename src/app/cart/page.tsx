@@ -5,7 +5,7 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, X, Check } from 'luc
 import Link from 'next/link';
 import { useState } from 'react';
 import { useCartStore } from '@/store/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, affiliateCode, setAffiliateCode, clearAffiliateCode, getOrderSummary } = useCartStore();
@@ -69,7 +69,7 @@ export default function CartPage() {
             {items.map((item, i) => (
               <motion.div key={item.productId} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass rounded-2xl p-5 flex items-center gap-5">
                 <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-primary-900/30 to-accent-900/30 flex-shrink-0">
-                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="w-8 h-8 text-white/10" /></div>}
+                  {item.image ? <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="w-8 h-8 text-white/10" /></div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <Link href={`/store/${item.slug}`} className="text-white font-semibold hover:text-primary-400 transition-colors truncate block">{item.name}</Link>

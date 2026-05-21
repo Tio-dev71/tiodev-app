@@ -5,7 +5,7 @@ import { Search, Filter, ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -170,7 +170,7 @@ export default function StorePage() {
                   <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary-900/30 to-accent-900/30">
                     {product.image ? (
                       <img
-                        src={product.image}
+                        src={getImageUrl(product.image)}
                         alt={product.name}
                         className="product-image w-full h-full object-cover"
                       />

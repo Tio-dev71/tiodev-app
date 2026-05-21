@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ShoppingBag, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils';
 
 interface ParallaxProductsProps {
   products: any[];
@@ -79,7 +80,7 @@ export function ParallaxProducts({ products }: ParallaxProductsProps) {
               <Link href={`/store/${product.slug}`}>
                 <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-900/30 to-surface-900">
                   {product.image ? (
-                    <img src={product.image} alt={product.name} className="product-image w-full h-full object-cover" />
+                    <img src={getImageUrl(product.image)} alt={product.name} className="product-image w-full h-full object-cover" />
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <ShoppingBag className="w-10 h-10 text-white/10" />

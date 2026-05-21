@@ -89,3 +89,19 @@ export function calculateDiscount(subtotal: number, discountPercent: number): nu
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Normalize image URL: convert legacy /uploads/... paths to /api/uploads/...
+ * so that dynamically uploaded images are served via the API route
+ * (Next.js production doesn't serve files added to /public after build).
+ */
+export function getImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  // Already using the API route or an external URL
+  if (url.startsWith('/api/uploads/') || url.startsWith('http')) return url;
+  // Convert legacy /uploads/filename to /api/uploads/filename
+  if (url.startsWith('/uploads/')) {
+    return `/api/uploads/${url.replace('/uploads/', '')}`;
+  }
+  return url;
+}

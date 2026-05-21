@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, Clock, Calendar, ArrowRight, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { getImageUrl } from '@/lib/utils';
 
 const categories = ['All', 'Trading', 'Workflow', 'AI Integration', 'Mindset'];
 
@@ -138,7 +139,7 @@ export default function BlogPage() {
                 <div className="relative h-48 w-full overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                   <img
-                    src={post.image || 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=800&auto=format&fit=crop'}
+                    src={getImageUrl(post.image) || 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=800&auto=format&fit=crop'}
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />

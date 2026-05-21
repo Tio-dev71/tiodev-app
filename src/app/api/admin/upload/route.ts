@@ -38,8 +38,9 @@ export async function POST(req: Request) {
     const filepath = path.join(uploadDir, filename);
     await writeFile(filepath, buffer);
 
-    // Return public URL
-    const url = `/uploads/${filename}`;
+    // Return URL via API route (Next.js production doesn't serve
+    // files added to /public after build)
+    const url = `/api/uploads/${filename}`;
     return NextResponse.json({ url, filename }, { status: 201 });
   } catch (error) {
     console.error('Upload error:', error);

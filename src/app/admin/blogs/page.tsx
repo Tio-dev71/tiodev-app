@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Plus, Pencil, Trash2, X, Loader2, ImageIcon, Upload, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 interface Blog {
   id: string;
@@ -189,7 +190,7 @@ export default function AdminBlogsPage() {
                   <tr key={b.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="p-4 flex items-center gap-3">
                       <div className="w-12 h-10 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
-                        {b.image ? <img src={b.image} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 text-white/10 m-auto mt-2.5" />}
+                        {b.image ? <img src={getImageUrl(b.image)} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 text-white/10 m-auto mt-2.5" />}
                       </div>
                       <div>
                         <div className="text-white text-sm font-medium line-clamp-1 max-w-[200px]">{b.title}</div>
@@ -256,7 +257,7 @@ export default function AdminBlogsPage() {
                 <label className="text-sm text-white/40 mb-2 block">Cover Image</label>
                 {form.image && (
                   <div className="relative mb-3 rounded-xl overflow-hidden border border-white/10">
-                    <img src={form.image} alt="Preview" className="w-full h-40 object-cover" />
+                    <img src={getImageUrl(form.image)} alt="Preview" className="w-full h-40 object-cover" />
                     <button type="button" onClick={() => setForm({...form, image: ''})} className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-lg text-white/60 hover:text-white transition-colors">
                       <X className="w-4 h-4" />
                     </button>

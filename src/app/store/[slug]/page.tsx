@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -69,7 +69,7 @@ export default function ProductDetailPage() {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}><Link href="/store" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors"><ArrowLeft className="w-4 h-4" /> Back to Store</Link></motion.div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-square glass rounded-3xl overflow-hidden">
-            {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>}
+            {product.image ? <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>}
             {product.featured && <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1.5 bg-amber-500/90 backdrop-blur-sm rounded-lg text-sm font-semibold text-white"><Star className="w-4 h-4 fill-white" /> Featured</div>}
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col">
