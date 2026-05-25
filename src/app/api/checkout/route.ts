@@ -118,7 +118,7 @@ export async function POST(req: Request) {
     // Handle payment based on method
     if (paymentMethod === 'stripe') {
       const discountPercent = affiliateCode && validAffiliateCode ? (discount / subtotal) : 0;
-      
+
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
           // Subtract discount directly from item price
           const itemDiscount = item.price * discountPercent;
           const discountedPrice = item.price - itemDiscount;
-          
+
           return {
             price_data: {
               currency: 'usd',
