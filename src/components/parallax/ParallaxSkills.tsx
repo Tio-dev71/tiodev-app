@@ -8,7 +8,7 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 const techCategories = [
   {
     icon: Layout,
-    skills: ["React.js", "React-Native", "JavaScript (ES6+)", "HTML/CSS/SCSS", "TailwindCSS", "Lit"]
+    skills: ["Mobile App", "React.js", "React-Native", "JavaScript (ES6+)", "HTML/CSS/SCSS", "TailwindCSS", "Lit"]
   },
   {
     icon: Database,

@@ -109,13 +109,13 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setCycle(cycle === 'monthly' ? 'yearly' : 'monthly')}
-            className="relative w-16 h-8 rounded-full bg-white/10 border border-white/10 transition-colors hover:border-white/20"
+            className="relative flex items-center w-16 h-8 rounded-full bg-white/10 border border-white/10 transition-colors hover:border-white/20 px-[3px]"
             id="pricing-cycle-toggle"
           >
             <motion.div
-              animate={{ x: cycle === 'yearly' ? 32 : 4 }}
+              animate={{ x: cycle === 'yearly' ? 32 : 0 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-1 w-6 h-6 rounded-full bg-gradient-to-r from-primary-500 to-cyan-500"
+              className="w-6 h-6 rounded-full bg-gradient-to-r from-primary-500 to-cyan-500"
             />
           </button>
           <span className={`text-sm font-medium transition-colors ${cycle === 'yearly' ? 'text-white' : 'text-white/40'}`}>
@@ -145,11 +145,10 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                className={`relative rounded-3xl overflow-hidden transition-all duration-500 hover:translate-y-[-8px] group ${
-                  plan.popular
-                    ? 'glass-strong border-2 border-violet-500/30'
-                    : 'glass'
-                }`}
+                className={`relative rounded-3xl overflow-hidden transition-all duration-500 hover:translate-y-[-8px] group ${plan.popular
+                  ? 'glass-strong border-2 border-violet-500/30'
+                  : 'glass'
+                  }`}
                 style={plan.popular ? { boxShadow: `0 0 60px ${plan.glowColor}` } : {}}
               >
                 {/* Popular Badge */}
@@ -190,9 +189,8 @@ export default function PricingPage() {
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3 text-sm">
-                        <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                          plan.popular ? 'text-violet-400' : 'text-primary-400'
-                        }`} />
+                        <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.popular ? 'text-violet-400' : 'text-primary-400'
+                          }`} />
                         <span className="text-white/70">{feature}</span>
                       </li>
                     ))}
@@ -201,11 +199,10 @@ export default function PricingPage() {
                   {/* CTA Button */}
                   <Link
                     href={`/subscription/checkout?plan=${plan.code}&cycle=${cycle}`}
-                    className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-300 group-hover:scale-[1.02] ${
-                      plan.popular
-                        ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40'
-                        : 'bg-white/8 text-white border border-white/10 hover:bg-white/12 hover:border-white/20'
-                    }`}
+                    className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-300 group-hover:scale-[1.02] ${plan.popular
+                      ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40'
+                      : 'bg-white/8 text-white border border-white/10 hover:bg-white/12 hover:border-white/20'
+                      }`}
                     id={`pricing-cta-${plan.code}`}
                   >
                     Bắt đầu miễn phí
@@ -254,7 +251,7 @@ export default function PricingPage() {
               },
               {
                 q: 'Thanh toán bằng cách nào?',
-                a: 'Bạn chuyển khoản ngân hàng qua mã QR VietQR. Hệ thống sẽ tự động xác nhận thanh toán qua SePay webhook trong vòng 1-2 phút.',
+                a: 'Bạn chuyển khoản ngân hàng qua mã QR VietQR hoặc Crypto Bank. Hệ thống sẽ tự động xác nhận thanh toán trong vòng 1-2 phút.',
               },
               {
                 q: 'Tôi có thể nâng cấp gói không?',

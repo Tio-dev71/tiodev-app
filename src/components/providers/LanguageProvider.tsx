@@ -80,9 +80,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       headingHighlight: 'của tôi',
       headingSuffix: '& Chuyên môn',
       location: 'Làm việc tại Hà Nội, Việt Nam',
-      categories: ['Frontend & UI', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
+      categories: ['Frontend & Mobile App', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
       highlightsTitle: 'Điểm nổi bật chuyên môn',
       highlightPoints: [
+        'Kinh nghiệm phát triển Mobile App đa nền tảng với React Native.',
         'Thành thạo JavaScript, thao tác DOM và mô hình đối tượng JavaScript.',
         'Hiểu sâu về React.js, các nguyên lý cốt lõi và các workflow phổ biến như Flux/Redux.',
         'Khả năng học nhanh, áp dụng công nghệ mới và tận dụng AI hiệu quả trong sản phẩm.',
@@ -131,9 +132,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       headingHighlight: 'Skills',
       headingSuffix: '& Expertise',
       location: 'Based in Ha Noi, Viet Nam',
-      categories: ['Frontend & UI', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
+      categories: ['Frontend & Mobile App', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
       highlightsTitle: 'Professional Highlights',
       highlightPoints: [
+        'Experience in cross-platform Mobile App development using React Native.',
         'Strong proficiency in JavaScript, DOM manipulation, and the JavaScript object model.',
         'Thorough understanding of React.js, its core principles, and popular workflows (Flux/Redux).',
         'Ability to learn, apply new technology quickly and use/update AI effectively in products.',
