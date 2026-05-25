@@ -88,6 +88,26 @@ export function Footer() {
               ))}
             </ul>
           </div>
+
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
+            <ul className="space-y-3">
+              {[
+                { href: '/terms', label: 'Terms of Service' },
+                { href: '/privacy', label: 'Privacy Policy' },
+                { href: '/refund', label: 'Refund Policy' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-white/40 hover:text-white text-sm transition-colors duration-300"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className="border-t border-white/5 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
