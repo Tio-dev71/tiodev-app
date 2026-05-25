@@ -351,12 +351,13 @@ function CheckoutContent() {
                     />
                   </div>
                   <div>
-                    <label className="block text-white/60 text-sm mb-2">TradingView Username (hoặc Email) *</label>
+                    <label className="block text-white/60 text-sm mb-2">TradingView Username *</label>
                     <input
                       required
                       type="text"
                       value={tradingViewUser}
-                      onChange={(e) => setTradingViewUser(e.target.value)}
+                      onChange={(e) => setTradingViewUser(e.target.value.replace(/@.*/, ''))}
+                      autoComplete="new-password"
                       placeholder="TradingView Username của bạn"
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                     />

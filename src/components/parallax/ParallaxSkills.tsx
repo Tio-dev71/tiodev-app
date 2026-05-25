@@ -8,11 +8,11 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 const techCategories = [
   {
     icon: Layout,
-    skills: ["Mobile App", "React.js", "React-Native", "JavaScript (ES6+)", "HTML/CSS/SCSS", "TailwindCSS", "Lit"]
+    skills: ["Mobile App", "React.js", "React-Native", "JavaScript (ES6+)", "HTML/CSS/SCSS", "TailwindCSS", "Lit", "NextJS"]
   },
   {
     icon: Database,
-    skills: ["PHP (Laravel)", "C/C++/C#", "RESTful API", "MySQL", "PostgreSQL", "MongoDB", "Firebase"]
+    skills: ["PHP (Laravel)", "C/C++/C#", "RESTful API", "MySQL", "PostgreSQL", "MongoDB", "Firebase", "TypeScript"]
   },
   {
     icon: Server,
