@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Check, Star, Package } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Check, Star, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -29,6 +29,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const searchParams = useSearchParams();
   const setAffiliateCode = useCartStore((s) => s.setAffiliateCode);
   const addItem = useCartStore((s) => s.addItem);
@@ -65,20 +66,46 @@ export default function ProductDetailPage() {
 
   if (!product) return <div className="min-h-screen pt-28 flex items-center justify-center"><div className="text-center"><div className="text-6xl mb-4">🔍</div><h2 className="text-2xl font-bold text-white mb-2">Product not found</h2><Link href="/store" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl"><ArrowLeft className="w-4 h-4" /> Back to Store</Link></div></div>;
 
+  const allImages = [product.image, ...(product.images || [])].filter(Boolean);
+
   return (
     <div className="min-h-screen pt-28 pb-20 px-4">
       <div className="fixed inset-0 overflow-hidden pointer-events-none"><div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary-600/10 rounded-full blur-[128px]" /></div>
       <div className="max-w-6xl mx-auto relative">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}><Link href="/store" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors"><ArrowLeft className="w-4 h-4" /> Back to Store</Link></motion.div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {product.subscriptionType === 'tradingview_indicator' && product.embedCode ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-[4/3] lg:aspect-auto glass rounded-3xl overflow-hidden" dangerouslySetInnerHTML={{ __html: product.embedCode }} />
-          ) : (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-square glass rounded-3xl overflow-hidden">
-              {product.image ? <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
+            <div className="relative aspect-square glass rounded-3xl overflow-hidden group">
+              {allImages.length > 0 ? (
+                <>
+                  <img src={getImageUrl(allImages[currentSlide])} alt={product.name} className="w-full h-full object-cover transition-all duration-500" />
+                  {allImages.length > 1 && (
+                    <>
+                      <button onClick={() => setCurrentSlide(prev => (prev === 0 ? allImages.length - 1 : prev - 1))} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100">
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button onClick={() => setCurrentSlide(prev => (prev === allImages.length - 1 ? 0 : prev + 1))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100">
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>
+              )}
               {product.featured && <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1.5 bg-amber-500/90 backdrop-blur-sm rounded-lg text-sm font-semibold text-white"><Star className="w-4 h-4 fill-white" /> Featured</div>}
-            </motion.div>
-          )}
+            </div>
+            
+            {allImages.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {allImages.map((img, idx) => (
+                  <button key={idx} onClick={() => setCurrentSlide(idx)} className={`relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${currentSlide === idx ? 'border-primary-500 opacity-100' : 'border-transparent opacity-50 hover:opacity-100'}`}>
+                    <img src={getImageUrl(img)} alt={`Slide ${idx}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col">
             {product.category && <span className="text-sm font-medium text-primary-400 mb-2">{product.category}</span>}
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">{product.name}</h1>

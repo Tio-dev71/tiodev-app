@@ -6,7 +6,7 @@ import { formatPrice, getImageUrl } from '@/lib/utils';
 
 interface Product {
   id: string; name: string; slug: string; description: string; price: number;
-  image: string; category: string | null; featured: boolean; active: boolean;
+  image: string; images: string[]; category: string | null; featured: boolean; active: boolean;
   downloadLink: string | null;
   isSubscription: boolean; subscriptionType: string | null; embedCode: string | null;
 }
@@ -21,7 +21,7 @@ export default function AdminProductsPage() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
+  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', images: [] as string[], category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
 
   useEffect(() => { fetchProducts(); }, []);
 
@@ -43,13 +43,13 @@ export default function AdminProductsPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
+    setForm({ name: '', description: '', price: '', image: '', images: [], category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
     setShowModal(true);
   }
 
   function openEdit(p: Product) {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, category: p.category || '', featured: p.featured, downloadLink: p.downloadLink || '', isSubscription: p.isSubscription || false, subscriptionType: p.subscriptionType || '', embedCode: p.embedCode || '' });
+    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, images: p.images || [], category: p.category || '', featured: p.featured, downloadLink: p.downloadLink || '', isSubscription: p.isSubscription || false, subscriptionType: p.subscriptionType || '', embedCode: p.embedCode || '' });
     setShowModal(true);
   }
 
@@ -273,6 +273,40 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
+              {/* Gallery Images Upload Section */}
+              <div>
+                <label className="text-sm text-white/40 mb-2 block">Gallery Images (Optional - Slide show)</label>
+                <div className="flex flex-wrap gap-3">
+                  {form.images.map((img, idx) => (
+                    <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10 group">
+                      <img src={getImageUrl(img)} alt="Gallery" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} className="absolute top-1 right-1 p-1 bg-black/60 rounded-lg text-white/60 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="w-24 h-24 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-white/40 transition-colors bg-white/5 relative">
+                    <Plus className="w-5 h-5 text-white/40" />
+                    <span className="text-[10px] text-white/30 mt-1">Add Image</span>
+                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      try {
+                        const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setForm(prev => ({ ...prev, images: [...prev.images, data.url] }));
+                        }
+                      } catch (e) {
+                        console.error('Failed to upload gallery image', e);
+                      }
+                    }} />
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="text-sm text-white/40 mb-1 block">Download Link</label>
                 <input
@@ -301,8 +335,8 @@ export default function AdminProductsPage() {
 
                     {form.subscriptionType === 'tradingview_indicator' && (
                       <div>
-                        <label className="text-sm text-white/40 mb-1 block">TradingView Widget Embed Code</label>
-                        <textarea value={form.embedCode} onChange={e => setForm({...form, embedCode: e.target.value})} rows={4} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 font-mono text-xs" placeholder='<div class="tradingview-widget-container">...' />
+                        <label className="text-sm text-white/40 mb-1 block">TradingView Indicator Setup</label>
+                        <p className="text-xs text-white/30">Users will be asked to provide their TradingView Username at checkout. Please upload your indicator preview images to the Gallery section above.</p>
                       </div>
                     )}
                   </>
