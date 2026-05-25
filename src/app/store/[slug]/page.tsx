@@ -18,6 +18,9 @@ interface Product {
   images: string[];
   category: string | null;
   featured: boolean;
+  isSubscription?: boolean;
+  subscriptionType?: string | null;
+  embedCode?: string | null;
 }
 
 export default function ProductDetailPage() {
@@ -68,10 +71,14 @@ export default function ProductDetailPage() {
       <div className="max-w-6xl mx-auto relative">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}><Link href="/store" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors"><ArrowLeft className="w-4 h-4" /> Back to Store</Link></motion.div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-square glass rounded-3xl overflow-hidden">
-            {product.image ? <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>}
-            {product.featured && <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1.5 bg-amber-500/90 backdrop-blur-sm rounded-lg text-sm font-semibold text-white"><Star className="w-4 h-4 fill-white" /> Featured</div>}
-          </motion.div>
+          {product.subscriptionType === 'tradingview_indicator' && product.embedCode ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-[4/3] lg:aspect-auto glass rounded-3xl overflow-hidden" dangerouslySetInnerHTML={{ __html: product.embedCode }} />
+          ) : (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative aspect-square glass rounded-3xl overflow-hidden">
+              {product.image ? <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-900/30 to-accent-900/30"><Package className="w-24 h-24 text-white/10" /></div>}
+              {product.featured && <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1.5 bg-amber-500/90 backdrop-blur-sm rounded-lg text-sm font-semibold text-white"><Star className="w-4 h-4 fill-white" /> Featured</div>}
+            </motion.div>
+          )}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col">
             {product.category && <span className="text-sm font-medium text-primary-400 mb-2">{product.category}</span>}
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">{product.name}</h1>
@@ -90,6 +97,11 @@ export default function ProductDetailPage() {
               <Link href="/pricing" className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-500 hover:to-purple-400 shadow-lg shadow-violet-500/25 transition-all duration-300 glow">
                 <Star className="w-5 h-5" />
                 Xem Bảng Giá Subscription 9Meta
+              </Link>
+            ) : product.isSubscription && product.subscriptionType === 'tradingview_indicator' ? (
+              <Link href={`/indicator-checkout/${product.id}`} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25 transition-all duration-300 glow">
+                <Star className="w-5 h-5" />
+                Đăng ký thuê (Subscribe) — {formatPrice(product.price)} / tháng
               </Link>
             ) : (
               <button onClick={handleAddToCart} disabled={addedToCart} className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-semibold text-lg transition-all duration-300 ${addedToCart ? 'bg-emerald-600' : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 glow'}`} id="add-to-cart-detail">

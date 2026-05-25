@@ -139,7 +139,19 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold text-white mb-4">Order Summary</h2>
               <div className="space-y-3 mb-6">
                 {items.map(item => (
-                  <div key={item.productId} className="flex justify-between text-sm"><span className="text-white/60 truncate mr-2">{item.name} × {item.quantity}</span><span className="text-white flex-shrink-0">{formatPrice(item.price * item.quantity)}</span></div>
+                  <div key={item.productId} className="flex justify-between text-sm">
+                    <span className="text-white/60 truncate mr-2">{item.name} × {item.quantity}</span>
+                    <div className="flex flex-col items-end flex-shrink-0">
+                      {summary.discountPercent > 0 ? (
+                        <>
+                          <span className="text-white/30 line-through text-xs">{formatPrice(item.price * item.quantity)}</span>
+                          <span className="text-emerald-400 font-medium">{formatPrice(item.price * item.quantity * (1 - summary.discountPercent / 100))}</span>
+                        </>
+                      ) : (
+                        <span className="text-white">{formatPrice(item.price * item.quantity)}</span>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
               <div className="border-t border-white/10 pt-4 space-y-2">

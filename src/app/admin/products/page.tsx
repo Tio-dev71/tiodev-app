@@ -8,6 +8,7 @@ interface Product {
   id: string; name: string; slug: string; description: string; price: number;
   image: string; category: string | null; featured: boolean; active: boolean;
   downloadLink: string | null;
+  isSubscription: boolean; subscriptionType: string | null; embedCode: string | null;
 }
 
 export default function AdminProductsPage() {
@@ -20,7 +21,7 @@ export default function AdminProductsPage() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '' });
+  const [form, setForm] = useState({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
 
   useEffect(() => { fetchProducts(); }, []);
 
@@ -42,13 +43,13 @@ export default function AdminProductsPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '' });
+    setForm({ name: '', description: '', price: '', image: '', category: '', featured: false, downloadLink: '', isSubscription: false, subscriptionType: '', embedCode: '' });
     setShowModal(true);
   }
 
   function openEdit(p: Product) {
     setEditing(p);
-    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, category: p.category || '', featured: p.featured, downloadLink: p.downloadLink || '' });
+    setForm({ name: p.name, description: p.description, price: p.price.toString(), image: p.image, category: p.category || '', featured: p.featured, downloadLink: p.downloadLink || '', isSubscription: p.isSubscription || false, subscriptionType: p.subscriptionType || '', embedCode: p.embedCode || '' });
     setShowModal(true);
   }
 
@@ -58,7 +59,7 @@ export default function AdminProductsPage() {
     try {
       const url = editing ? `/api/admin/products/${editing.id}` : '/api/admin/products';
       const method = editing ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price: parseFloat(form.price), downloadLink: form.downloadLink || null }) });
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price: parseFloat(form.price), downloadLink: form.downloadLink || null, subscriptionType: form.subscriptionType || null, embedCode: form.embedCode || null }) });
       if (res.ok) {
         setShowModal(false);
         fetchProducts();
@@ -280,6 +281,32 @@ export default function AdminProductsPage() {
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50"
                   placeholder="https://download.yourapp.com/file.exe"
                 />
+              </div>
+
+              <div className="p-4 bg-white/5 rounded-xl space-y-4 border border-white/10">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isSubscription} onChange={e => setForm({...form, isSubscription: e.target.checked})} className="rounded" />
+                  <span className="text-sm font-semibold text-white">This is a Subscription Product</span>
+                </label>
+                
+                {form.isSubscription && (
+                  <>
+                    <div>
+                      <label className="text-sm text-white/40 mb-1 block">Subscription Type</label>
+                      <select value={form.subscriptionType} onChange={e => setForm({...form, subscriptionType: e.target.value})} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50">
+                        <option value="">Standard</option>
+                        <option value="tradingview_indicator">TradingView Indicator (Invite-only)</option>
+                      </select>
+                    </div>
+
+                    {form.subscriptionType === 'tradingview_indicator' && (
+                      <div>
+                        <label className="text-sm text-white/40 mb-1 block">TradingView Widget Embed Code</label>
+                        <textarea value={form.embedCode} onChange={e => setForm({...form, embedCode: e.target.value})} rows={4} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 font-mono text-xs" placeholder='<div class="tradingview-widget-container">...' />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.featured} onChange={e => setForm({...form, featured: e.target.checked})} className="rounded" /><span className="text-sm text-white/60">Featured product</span></label>

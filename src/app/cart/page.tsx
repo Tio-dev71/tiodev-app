@@ -73,14 +73,33 @@ export default function CartPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <Link href={`/store/${item.slug}`} className="text-white font-semibold hover:text-primary-400 transition-colors truncate block">{item.name}</Link>
-                  <div className="text-sm text-white/40 mt-1">{formatPrice(item.price)} each</div>
+                  <div className="text-sm mt-1 flex items-center gap-2">
+                    {summary.discountPercent > 0 ? (
+                      <>
+                        <span className="text-white/30 line-through">{formatPrice(item.price)}</span>
+                        <span className="text-emerald-400 font-medium">{formatPrice(item.price * (1 - summary.discountPercent / 100))}</span>
+                      </>
+                    ) : (
+                      <span className="text-white/40">{formatPrice(item.price)}</span>
+                    )}
+                    <span className="text-white/30 text-xs">each</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1 glass rounded-xl">
                   <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="p-2 text-white/40 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
                   <span className="px-3 text-white font-medium text-sm">{item.quantity}</span>
                   <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="p-2 text-white/40 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
                 </div>
-                <div className="text-white font-semibold w-24 text-right">{formatPrice(item.price * item.quantity)}</div>
+                <div className="font-semibold w-24 text-right flex flex-col items-end">
+                  {summary.discountPercent > 0 ? (
+                    <>
+                      <span className="text-white/30 line-through text-xs font-normal">{formatPrice(item.price * item.quantity)}</span>
+                      <span className="text-emerald-400">{formatPrice(item.price * item.quantity * (1 - summary.discountPercent / 100))}</span>
+                    </>
+                  ) : (
+                    <span className="text-white">{formatPrice(item.price * item.quantity)}</span>
+                  )}
+                </div>
                 <button onClick={() => removeItem(item.productId)} className="p-2 text-white/20 hover:text-red-400 transition-colors"><Trash2 className="w-5 h-5" /></button>
               </motion.div>
             ))}

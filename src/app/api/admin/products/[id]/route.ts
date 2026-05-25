@@ -18,6 +18,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         category: body.category || null,
         featured: body.featured || false,
         downloadLink: body.downloadLink || null,
+        isSubscription: body.isSubscription || false,
+        subscriptionType: body.subscriptionType || null,
+        embedCode: body.embedCode || null,
       },
     });
     return NextResponse.json(product);

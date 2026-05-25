@@ -8,20 +8,23 @@ datasource db {
 }
 
 model Product {
-  id           String      @id @default(cuid())
-  name         String
-  slug         String      @unique
-  description  String
-  price        Float
-  image        String
-  images       String[]    @default([])
-  downloadLink String?
-  category     String?
-  featured     Boolean     @default(false)
-  active       Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  orderItems   OrderItem[]
+  id               String      @id @default(cuid())
+  name             String
+  slug             String      @unique
+  description      String
+  price            Float
+  image            String
+  images           String[]    @default([])
+  downloadLink     String?
+  category         String?
+  featured         Boolean     @default(false)
+  active           Boolean     @default(true)
+  isSubscription   Boolean     @default(false)
+  subscriptionType String?
+  embedCode        String?     @db.Text
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  orderItems       OrderItem[]
 
   @@index([slug])
   @@index([category])
@@ -29,25 +32,26 @@ model Product {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique @default(cuid())
-  customerName    String
-  customerEmail   String
-  customerPhone   String?
-  shippingAddress String?
-  subtotal        Float
-  discount        Float       @default(0)
-  total           Float
-  status          OrderStatus @default(PENDING)
-  paymentMethod   String
-  paymentId       String?
-  affiliateCode   String?
-  syncedToSheets  Boolean     @default(false)
-  notes           String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  items           OrderItem[]
-  affiliate       Affiliate?  @relation(fields: [affiliateCode], references: [code])
+  id               String      @id @default(cuid())
+  orderNumber      String      @unique @default(cuid())
+  customerName     String
+  customerEmail    String
+  customerPhone    String?
+  shippingAddress  String?
+  subtotal         Float
+  discount         Float       @default(0)
+  total            Float
+  status           OrderStatus @default(PENDING)
+  paymentMethod    String
+  paymentId        String?
+  affiliateCode    String?
+  syncedToSheets   Boolean     @default(false)
+  notes            String?
+  tradingViewUser  String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  items            OrderItem[]
+  affiliate        Affiliate?  @relation(fields: [affiliateCode], references: [code])
 
   @@index([status])
   @@index([customerEmail])

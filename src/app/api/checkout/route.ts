@@ -60,6 +60,7 @@ export async function POST(req: Request) {
         total,
         paymentMethod,
         affiliateCode: validAffiliateCode,
+        tradingViewUser: body.tradingViewUser || null,
         status: 'PENDING',
         items: { create: orderItems },
       },
@@ -68,26 +69,25 @@ export async function POST(req: Request) {
 
     // Handle payment based on method
     if (paymentMethod === 'stripe') {
+      const discountPercent = affiliateCode && validAffiliateCode ? (discount / subtotal) : 0;
+      
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        line_items: order.items.map((item) => ({
-          price_data: {
-            currency: 'usd',
-            product_data: { name: item.product.name, images: item.product.image ? [item.product.image] : [] },
-            unit_amount: Math.round(item.price * 100), // Stripe uses cents
-          },
-          quantity: item.quantity,
-        })),
-        ...(discount > 0 ? {
-          discounts: [{
-            coupon: (await stripe.coupons.create({
-              amount_off: Math.round(discount * 100),
+        line_items: order.items.map((item) => {
+          // Subtract discount directly from item price
+          const itemDiscount = item.price * discountPercent;
+          const discountedPrice = item.price - itemDiscount;
+          
+          return {
+            price_data: {
               currency: 'usd',
-              duration: 'once',
-            })).id,
-          }],
-        } : {}),
+              product_data: { name: item.product.name, images: item.product.image ? [item.product.image] : [] },
+              unit_amount: Math.round(discountedPrice * 100), // Stripe uses cents
+            },
+            quantity: item.quantity,
+          };
+        }),
         mode: 'payment',
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?orderId=${order.id}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cart`,

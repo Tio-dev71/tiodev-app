@@ -31,6 +31,9 @@ export async function POST(req: Request) {
         category: body.category || null,
         featured: body.featured || false,
         downloadLink: body.downloadLink || null,
+        isSubscription: body.isSubscription || false,
+        subscriptionType: body.subscriptionType || null,
+        embedCode: body.embedCode || null,
       },
     });
     return NextResponse.json(product, { status: 201 });

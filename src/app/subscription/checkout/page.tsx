@@ -43,13 +43,53 @@ function CheckoutContent() {
   const [refCodeInput, setRefCodeInput] = useState(affiliateCode || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [codeError, setCodeError] = useState('');
+  const [codeSuccess, setCodeSuccess] = useState('');
+
+  const discountAmount = Math.round((amount * discountPercent) / 100);
+  const finalAmount = amount - discountAmount;
 
   // Sync refCodeInput if affiliateCode becomes available from store (e.g. from URL)
   useEffect(() => {
     if (affiliateCode && !refCodeInput) {
       setRefCodeInput(affiliateCode);
+      // Also validate immediately if it comes from the store
+      validateCode(affiliateCode);
     }
   }, [affiliateCode]);
+
+  async function validateCode(codeToValidate: string) {
+    if (!codeToValidate.trim()) return;
+    setCodeLoading(true);
+    setCodeError('');
+    setCodeSuccess('');
+    try {
+      const res = await fetch('/api/affiliates/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: codeToValidate.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setDiscountPercent(data.discountPercent);
+        setCodeSuccess(`Áp dụng mã giảm ${data.discountPercent}% thành công!`);
+      } else {
+        setDiscountPercent(0);
+        setCodeError(data.message || 'Mã không hợp lệ');
+      }
+    } catch {
+      setDiscountPercent(0);
+      setCodeError('Lỗi kiểm tra mã');
+    } finally {
+      setCodeLoading(false);
+    }
+  }
+
+  function handleApplyCode() {
+    validateCode(refCodeInput);
+  }
 
   // Payment state
   const [orderData, setOrderData] = useState<{
@@ -249,7 +289,14 @@ function CheckoutContent() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-white font-bold">{formatVND(amount)}</div>
+              {discountPercent > 0 ? (
+                <>
+                  <div className="text-white/50 font-bold line-through text-sm">{formatVND(amount)}</div>
+                  <div className="text-emerald-400 font-bold text-lg">{formatVND(finalAmount)}</div>
+                </>
+              ) : (
+                <div className="text-white font-bold">{formatVND(amount)}</div>
+              )}
               <div className="text-white/30 text-xs">/{cycle === 'yearly' ? 'năm' : 'tháng'}</div>
             </div>
           </div>
@@ -298,14 +345,27 @@ function CheckoutContent() {
               <div className="space-y-4 mb-8">
                 <div>
                   <label className="block text-white/60 text-sm mb-2">Mã giới thiệu / Affiliate Code (Tuỳ chọn)</label>
-                  <input
-                    type="text"
-                    value={refCodeInput}
-                    onChange={(e) => setRefCodeInput(e.target.value)}
-                    placeholder="Nhập mã giới thiệu..."
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
-                  />
-                  <p className="text-white/30 text-xs mt-2">Nếu bạn được ai đó giới thiệu, hãy nhập mã của họ vào đây.</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={refCodeInput}
+                      onChange={(e) => setRefCodeInput(e.target.value)}
+                      placeholder="Nhập mã giới thiệu..."
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                    />
+                    <button
+                      onClick={handleApplyCode}
+                      disabled={codeLoading || !refCodeInput.trim()}
+                      className="px-6 py-3 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                    >
+                      {codeLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Áp dụng'}
+                    </button>
+                  </div>
+                  {codeError && <p className="text-red-400 text-xs mt-2">{codeError}</p>}
+                  {codeSuccess && <p className="text-emerald-400 text-xs mt-2">{codeSuccess}</p>}
+                  {!codeError && !codeSuccess && (
+                    <p className="text-white/30 text-xs mt-2">Nếu bạn được ai đó giới thiệu, hãy nhập mã của họ vào đây.</p>
+                  )}
                 </div>
               </div>
 
@@ -457,7 +517,7 @@ function CheckoutContent() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/40">Số tiền</span>
-                  <span className="text-white font-bold">{formatVND(amount)}</span>
+                  <span className="text-white font-bold">{formatVND(finalAmount)}</span>
                 </div>
               </div>
 

@@ -7,6 +7,7 @@ import { Eye, CheckCircle, Loader2 } from 'lucide-react';
 interface Order {
   id: string; orderNumber: string; customerName: string; customerEmail: string;
   total: number; status: string; paymentMethod: string; affiliateCode: string | null;
+  tradingViewUser: string | null;
   createdAt: string; items: Array<{ product: { name: string }; quantity: number; price: number }>;
 }
 
@@ -96,6 +97,7 @@ export default function AdminOrdersPage() {
               <div className="flex justify-between"><span className="text-white/40">Email</span><span className="text-white">{selected.customerEmail}</span></div>
               <div className="flex justify-between"><span className="text-white/40">Payment</span><span className="text-white">{selected.paymentMethod}</span></div>
               {selected.affiliateCode && <div className="flex justify-between"><span className="text-white/40">Affiliate</span><span className="text-primary-400">{selected.affiliateCode}</span></div>}
+              {selected.tradingViewUser && <div className="flex justify-between"><span className="text-white/40">TradingView Username</span><span className="text-emerald-400 font-bold">{selected.tradingViewUser}</span></div>}
             </div>
             <div className="border-t border-white/5 pt-4 mb-4">
               <h3 className="text-sm font-medium text-white mb-2">Items</h3>
