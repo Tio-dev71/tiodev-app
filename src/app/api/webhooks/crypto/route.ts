@@ -1,25 +1,29 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyCryptomusSignature } from '@/lib/cryptomus';
+import { verifyPlisioSignature } from '@/lib/plisio';
 import { appendOrderToSheet } from '@/lib/google-sheets';
 import { sendOrderConfirmation } from '@/lib/email';
 import { sendDiscordNotification } from '@/lib/discord';
 
 export async function POST(req: Request) {
   try {
-    const bodyText = await req.text();
-    const signature = req.headers.get('sign');
-
-    if (!signature || !verifyCryptomusSignature(bodyText, signature)) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    let data: Record<string, any> = {};
+    const contentType = req.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      data = await req.json();
+    } else {
+      const formData = await req.formData();
+      data = Object.fromEntries(formData.entries());
     }
 
-    const data = JSON.parse(bodyText);
+    if (!verifyPlisioSignature(data)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    }
     
-    // Cryptomus status can be 'paid', 'paid_over', 'wrong_amount', 'wrong_amount_waiting', 'host_account_connected', 'system_fail', 'refund_process', 'refund_fail', 'refund_paid', 'locked'
-    // We only care if it's successfully paid
-    if (data.status === 'paid' || data.status === 'paid_over') {
-      const orderId = data.order_id;
+    // Plisio status: 'completed', 'mismatch', 'cancelled', 'error', 'new', 'pending'
+    if (data.status === 'completed' || data.status === 'mismatch') {
+      const orderId = data.order_number;
       
       const order = await prisma.order.findUnique({
         where: { id: orderId },
@@ -29,7 +33,7 @@ export async function POST(req: Request) {
       if (order && order.status !== 'PAID') {
         const updatedOrder = await prisma.order.update({
           where: { id: orderId },
-          data: { status: 'PAID', paymentId: data.uuid },
+          data: { status: 'PAID', paymentId: data.txn_id || data.id || '' },
           include: { items: { include: { product: true } } },
         });
 
@@ -75,7 +79,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Cryptomus webhook error:', error);
+    console.error('Plisio webhook error:', error);
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }

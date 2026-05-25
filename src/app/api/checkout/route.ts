@@ -5,7 +5,7 @@ import { generateVietQR } from '@/lib/vietqr';
 import { sendDiscordNotification } from '@/lib/discord';
 import { appendOrderToSheet } from '@/lib/google-sheets';
 import { sendOrderConfirmation } from '@/lib/email';
-import { createCryptomusInvoice } from '@/lib/cryptomus';
+import { createPlisioInvoice } from '@/lib/plisio';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -165,7 +165,7 @@ export async function POST(req: Request) {
     }
 
     if (paymentMethod === 'crypto') {
-      const checkoutUrl = await createCryptomusInvoice({
+      const checkoutUrl = await createPlisioInvoice({
         id: order.id,
         amount: total,
         currency: 'USD',
