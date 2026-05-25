@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CreditCard, QrCode, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { CreditCard, QrCode, Lock, ArrowLeft, Loader2, Bitcoin } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, affiliateCode, getOrderSummary, clearCart } = useCartStore();
   const summary = getOrderSummary();
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'vietqr'>('stripe');
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'vietqr' | 'crypto'>('stripe');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [vietqrData, setVietqrData] = useState<{ qrImageUrl: string; bankName: string; accountNo: string; accountName: string; amount: number; description: string } | null>(null);
@@ -54,6 +54,9 @@ export default function CheckoutPage() {
 
       if (paymentMethod === 'stripe' && data.checkoutUrl) {
         // Redirect to Stripe Checkout
+        window.location.href = data.checkoutUrl;
+      } else if (paymentMethod === 'crypto' && data.checkoutUrl) {
+        // Redirect to Cryptomus Checkout
         window.location.href = data.checkoutUrl;
       } else if (paymentMethod === 'vietqr') {
         setVietqrData(data.vietqr);
@@ -116,21 +119,28 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Method */}
-            <div className="glass rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Payment Method</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <button type="button" onClick={() => setPaymentMethod('stripe')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'stripe' ? 'border-primary-500 bg-primary-500/10' : 'border-white/10 hover:border-white/20'}`}>
-                  <CreditCard className={`w-6 h-6 mb-2 ${paymentMethod === 'stripe' ? 'text-primary-400' : 'text-white/40'}`} />
-                  <div className="text-sm font-medium text-white">Credit Card</div>
-                  <div className="text-xs text-white/40">Visa, Mastercard, etc.</div>
-                </button>
-                <button type="button" onClick={() => setPaymentMethod('vietqr')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'vietqr' ? 'border-primary-500 bg-primary-500/10' : 'border-white/10 hover:border-white/20'}`}>
-                  <QrCode className={`w-6 h-6 mb-2 ${paymentMethod === 'vietqr' ? 'text-primary-400' : 'text-white/40'}`} />
-                  <div className="text-sm font-medium text-white">VietQR</div>
-                  <div className="text-xs text-white/40">Bank Transfer (VN)</div>
-                </button>
+            {summary.total > 0 && (
+              <div className="glass rounded-2xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Payment Method</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <button type="button" onClick={() => setPaymentMethod('stripe')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'stripe' ? 'border-primary-500 bg-primary-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                    <CreditCard className={`w-6 h-6 mb-2 ${paymentMethod === 'stripe' ? 'text-primary-400' : 'text-white/40'}`} />
+                    <div className="text-sm font-medium text-white">Credit Card</div>
+                    <div className="text-xs text-white/40">Visa, Mastercard, etc.</div>
+                  </button>
+                  <button type="button" onClick={() => setPaymentMethod('vietqr')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'vietqr' ? 'border-primary-500 bg-primary-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                    <QrCode className={`w-6 h-6 mb-2 ${paymentMethod === 'vietqr' ? 'text-primary-400' : 'text-white/40'}`} />
+                    <div className="text-sm font-medium text-white">VietQR</div>
+                    <div className="text-xs text-white/40">Bank Transfer (VN)</div>
+                  </button>
+                  <button type="button" onClick={() => setPaymentMethod('crypto')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'crypto' ? 'border-primary-500 bg-primary-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                    <Bitcoin className={`w-6 h-6 mb-2 ${paymentMethod === 'crypto' ? 'text-primary-400' : 'text-white/40'}`} />
+                    <div className="text-sm font-medium text-white">Crypto</div>
+                    <div className="text-xs text-white/40">USDT, BTC, ETH...</div>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Order Summary */}
@@ -162,9 +172,9 @@ export default function CheckoutPage() {
               {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
               <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 w-full py-4 mt-6 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-2xl hover:from-primary-500 hover:to-primary-400 transition-all glow disabled:opacity-50" id="checkout-submit">
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-5 h-5" />}
-                {loading ? 'Processing...' : `Pay ${formatPrice(summary.total)}`}
+                {loading ? 'Processing...' : (summary.total === 0 ? 'Get for Free' : `Pay ${formatPrice(summary.total)}`)}
               </button>
-              <p className="text-white/20 text-xs text-center mt-3 flex items-center justify-center gap-1"><Lock className="w-3 h-3" /> Secured by Stripe</p>
+              {summary.total > 0 && <p className="text-white/20 text-xs text-center mt-3 flex items-center justify-center gap-1"><Lock className="w-3 h-3" /> Secured by {paymentMethod === 'stripe' ? 'Stripe' : paymentMethod === 'crypto' ? 'Cryptomus' : 'System'}</p>}
             </div>
           </div>
         </form>

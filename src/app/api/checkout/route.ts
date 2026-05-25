@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { generateVietQR } from '@/lib/vietqr';
 import { sendDiscordNotification } from '@/lib/discord';
+import { appendOrderToSheet } from '@/lib/google-sheets';
+import { sendOrderConfirmation } from '@/lib/email';
+import { createCryptomusInvoice } from '@/lib/cryptomus';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -49,6 +52,8 @@ export async function POST(req: Request) {
 
     const total = Math.round((subtotal - discount) * 100) / 100;
 
+    const isFree = total === 0;
+
     // Create order
     const order = await prisma.order.create({
       data: {
@@ -59,14 +64,53 @@ export async function POST(req: Request) {
         subtotal,
         discount,
         total,
-        paymentMethod,
+        paymentMethod: isFree ? 'free' : paymentMethod,
         affiliateCode: validAffiliateCode,
         tradingViewUser: body.tradingViewUser || null,
-        status: 'PENDING',
+        status: isFree ? 'PAID' : 'PENDING',
         items: { create: orderItems },
       },
       include: { items: { include: { product: true } } },
     });
+
+    if (isFree) {
+      await appendOrderToSheet({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone || '',
+        products: order.items.map((i) => `${i.product.name} x${i.quantity}`).join(', '),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        total: order.total,
+        affiliateCode: order.affiliateCode || '',
+        paymentMethod: 'free',
+        status: 'PAID',
+        createdAt: order.createdAt.toISOString(),
+      });
+
+      await prisma.order.update({ where: { id: order.id }, data: { syncedToSheets: true } });
+
+      await sendOrderConfirmation({
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        orderNumber: order.orderNumber,
+        items: order.items.map((i) => ({
+          name: i.product.name,
+          quantity: i.quantity,
+          price: i.price,
+          downloadLink: i.product.downloadLink,
+        })),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        total: order.total,
+        paymentMethod: 'free',
+      });
+
+      await sendDiscordNotification(order);
+      return NextResponse.json({ orderId: order.id });
+    }
 
     // Notify Discord for the new pending order
     await sendDiscordNotification(order);
@@ -117,6 +161,15 @@ export async function POST(req: Request) {
       });
 
       return NextResponse.json({ orderId: order.id, vietqr: qrData });
+    }
+
+    if (paymentMethod === 'crypto') {
+      const checkoutUrl = await createCryptomusInvoice({
+        id: order.id,
+        amount: total,
+        currency: 'USD',
+      });
+      return NextResponse.json({ checkoutUrl, orderId: order.id });
     }
 
     return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 });
