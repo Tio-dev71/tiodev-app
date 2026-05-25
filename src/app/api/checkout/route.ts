@@ -153,9 +153,10 @@ export async function POST(req: Request) {
     }
 
     if (paymentMethod === 'vietqr') {
-      // Generate VietQR code
+      // Generate VietQR code for bank transfer
+      // Multiply by 26000 to convert USD to VND
       const qrData = await generateVietQR({
-        amount: total,
+        amount: total * 26000,
         description: `Order ${order.orderNumber}`,
         orderNumber: order.orderNumber,
       });

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCartStore } from '@/store/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, formatVND } from '@/lib/utils';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm"><span className="text-white/40">Bank</span><span className="text-white font-medium">{vietqrData.bankName}</span></div>
               <div className="flex justify-between text-sm"><span className="text-white/40">Account</span><span className="text-white font-medium">{vietqrData.accountNo}</span></div>
               <div className="flex justify-between text-sm"><span className="text-white/40">Name</span><span className="text-white font-medium">{vietqrData.accountName}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-white/40">Amount</span><span className="text-white font-bold">{formatPrice(vietqrData.amount)}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/40">Amount</span><span className="text-white font-bold">{formatVND(vietqrData.amount)}</span></div>
               <div className="flex justify-between text-sm"><span className="text-white/40">Message</span><span className="text-white font-medium text-xs">{vietqrData.description}</span></div>
             </div>
             <p className="text-white/30 text-xs">After payment, your order will be confirmed automatically or by admin review.</p>
