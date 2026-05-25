@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { generateVietQR } from '@/lib/vietqr';
+import { sendDiscordNotification } from '@/lib/discord';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -66,6 +67,9 @@ export async function POST(req: Request) {
       },
       include: { items: { include: { product: true } } },
     });
+
+    // Notify Discord for the new pending order
+    await sendDiscordNotification(order);
 
     // Handle payment based on method
     if (paymentMethod === 'stripe') {

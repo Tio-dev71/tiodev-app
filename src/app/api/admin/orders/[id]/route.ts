@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { appendOrderToSheet } from '@/lib/google-sheets';
 import { sendOrderConfirmation } from '@/lib/email';
+import { sendDiscordNotification } from '@/lib/discord';
 import { NextResponse } from 'next/server';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -50,6 +51,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       });
 
       await prisma.order.update({ where: { id }, data: { syncedToSheets: true } });
+      await sendDiscordNotification(order);
     }
 
     return NextResponse.json(order);

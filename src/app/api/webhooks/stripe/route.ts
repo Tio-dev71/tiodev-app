@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { appendOrderToSheet } from '@/lib/google-sheets';
 import { sendOrderConfirmation } from '@/lib/email';
+import { sendDiscordNotification } from '@/lib/discord';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -68,6 +69,8 @@ export async function POST(req: Request) {
         total: order.total,
         paymentMethod: order.paymentMethod,
       });
+
+      await sendDiscordNotification(order);
     }
   }
 

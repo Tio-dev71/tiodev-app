@@ -1,5 +1,6 @@
 // API to record a subscription order for affiliate tracking
 import { prisma } from '@/lib/prisma';
+import { sendDiscordNotification } from '@/lib/discord';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -41,7 +42,10 @@ export async function POST(request: Request) {
           }],
         },
       },
+      include: { items: { include: { product: true } } }
     });
+
+    await sendDiscordNotification(order);
 
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
