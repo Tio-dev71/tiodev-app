@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Package } from 'lucide-react';
+import { QrCode, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Package, Bitcoin } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
@@ -34,6 +34,7 @@ function CheckoutContent() {
   const [tradingViewUser, setTradingViewUser] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'vietqr' | 'crypto'>('vietqr');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -159,7 +160,7 @@ function CheckoutContent() {
           items: [{ productId: product.id, quantity: 1 }],
           customerName,
           customerEmail,
-          paymentMethod: 'vietqr',
+          paymentMethod,
           affiliateCode: refCodeInput || undefined,
           tradingViewUser
         }),
@@ -173,10 +174,14 @@ function CheckoutContent() {
         return;
       }
 
-      setOrderData({
-        orderId: data.orderId,
-        vietqr: data.vietqr,
-      });
+      if (paymentMethod === 'crypto' && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else if (paymentMethod === 'vietqr') {
+        setOrderData({
+          orderId: data.orderId,
+          vietqr: data.vietqr,
+        });
+      }
     } catch {
       setError('Không thể kết nối server.');
       setStep('review');
@@ -380,6 +385,22 @@ function CheckoutContent() {
                     {codeError && <p className="text-red-400 text-xs mt-2">{codeError}</p>}
                     {codeSuccess && <p className="text-emerald-400 text-xs mt-2">{codeSuccess}</p>}
                   </div>
+
+                  <div className="pt-4 border-t border-white/10 mb-6">
+                    <label className="block text-white/60 text-sm mb-4">Phương thức thanh toán *</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button type="button" onClick={() => setPaymentMethod('vietqr')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'vietqr' ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                        <QrCode className={`w-6 h-6 mb-2 ${paymentMethod === 'vietqr' ? 'text-emerald-400' : 'text-white/40'}`} />
+                        <div className="text-sm font-medium text-white">VietQR</div>
+                        <div className="text-xs text-white/40">Chuyển khoản VNĐ</div>
+                      </button>
+                      <button type="button" onClick={() => setPaymentMethod('crypto')} className={`p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === 'crypto' ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                        <Bitcoin className={`w-6 h-6 mb-2 ${paymentMethod === 'crypto' ? 'text-emerald-400' : 'text-white/40'}`} />
+                        <div className="text-sm font-medium text-white">Crypto</div>
+                        <div className="text-xs text-white/40">USDT, BTC, ETH...</div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {error && (
@@ -451,7 +472,7 @@ function CheckoutContent() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-white/40">Số tiền</span>
-                        <span className="text-white font-bold text-emerald-400">{formatPrice(orderData.vietqr.amount)}</span>
+                        <span className="text-white font-bold text-emerald-400">{formatVND(orderData.vietqr.amount)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-white/40">Nội dung CK</span>
