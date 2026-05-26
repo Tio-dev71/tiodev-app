@@ -70,7 +70,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       resume: 'Hồ sơ của tôi',
       stats: [
         { value: '500+', label: 'Lệnh đã chạy' },
-        { value: '85%', label: 'Tỷ lệ thắng' },
+        { value: '1000+', label: 'Đóng góp mã nguồn mở' },
         { value: '2+', label: 'Năm kinh nghiệm' },
         { value: '50+', label: 'Khách hàng hài lòng' },
       ],
@@ -122,7 +122,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       resume: 'My Resume',
       stats: [
         { value: '500+', label: 'Trades Executed' },
-        { value: '85%', label: 'Win Rate' },
+        { value: '1000+', label: 'Open Source Commits' },
         { value: '2+', label: 'Years Experience' },
         { value: '50+', label: 'Happy Clients' },
       ],
@@ -182,9 +182,23 @@ function detectLocale(): Locale {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
+  const [commitCount, setCommitCount] = useState<string>('...');
 
   useEffect(() => {
     setLocaleState(detectLocale());
+
+    fetch('https://api.github.com/search/commits?q=author:Tio-dev71', {
+      headers: {
+        Accept: 'application/vnd.github.cloak-preview'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.total_count !== undefined) {
+          setCommitCount(`${data.total_count}+`);
+        }
+      })
+      .catch(err => console.error('Failed to fetch github stats', err));
   }, []);
 
   const setLocale = (nextLocale: Locale) => {
@@ -194,10 +208,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value = useMemo(
-    () => ({ locale, setLocale, t: dictionaries[locale] }),
-    [locale]
-  );
+  const value = useMemo(() => {
+    const t = { ...dictionaries[locale] };
+    const newStats = [...t.hero.stats];
+    // Update the second stat (index 1) which is "Open Source Commits"
+    newStats[1] = { ...newStats[1], value: commitCount };
+    t.hero = { ...t.hero, stats: newStats };
+
+    return { locale, setLocale, t };
+  }, [locale, commitCount]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
