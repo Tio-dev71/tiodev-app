@@ -146,6 +146,13 @@ function LoginContent() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {mode === 'login' && (
+                <div className="flex justify-end mt-2">
+                  <Link href="/account/forgot-password" className="text-xs text-primary-400 hover:text-primary-300 transition-colors">
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Error */}

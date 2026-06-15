@@ -27,6 +27,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; message?: string }>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -125,15 +127,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const forgotPassword = useCallback(async (email: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      return { success: res.ok, message: data.message };
+    } catch {
+      return { success: false, message: 'Không thể kết nối server' };
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (email: string, code: string, newPassword: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, newPassword }),
+      });
+      const data = await res.json();
+      return { success: res.ok, message: data.message };
+    } catch {
+      return { success: false, message: 'Không thể kết nối server' };
+    }
+  }, []);
+
   const value = useMemo(() => ({
     user,
     token,
     loading,
     login,
     register,
+    forgotPassword,
+    resetPassword,
     logout,
     isAuthenticated: !!token && !!user,
-  }), [user, token, loading, login, register, logout]);
+  }), [user, token, loading, login, register, forgotPassword, resetPassword, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
