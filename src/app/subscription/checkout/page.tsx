@@ -19,9 +19,9 @@ const planInfo: Record<string, { name: string; color: string }> = {
 };
 
 const planPricing: Record<string, { monthly: number; yearly: number }> = {
-  starter: { monthly: 799000, yearly: 7670400 },
-  pro: { monthly: 1590000, yearly: 15264000 },
-  enterprise: { monthly: 3490000, yearly: 33504000 },
+  starter: { monthly: 399000, yearly: 3830400 },
+  pro: { monthly: 1190000, yearly: 11424000 },
+  enterprise: { monthly: 3090000, yearly: 29664000 },
 };
 
 type Step = 'review' | 'payment' | 'success';
