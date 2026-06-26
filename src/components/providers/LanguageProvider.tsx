@@ -83,6 +83,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       categories: ['Frontend & Mobile App', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
       highlightsTitle: 'Điểm nổi bật chuyên môn',
       highlightPoints: [
+        'CTO tại CÔNG TY TNHH TOP CÔNG NGHỆ VÀ NỘI DUNG SỐ',
         'Kinh nghiệm phát triển Mobile App đa nền tảng với React Native.',
         'Thành thạo JavaScript, thao tác DOM và mô hình đối tượng JavaScript.',
         'Hiểu sâu về React.js, các nguyên lý cốt lõi và các workflow phổ biến như Flux/Redux.',
@@ -135,6 +136,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       categories: ['Frontend & Mobile App', 'Backend & Database', 'System & Tools', 'Specialty & Workflow'],
       highlightsTitle: 'Professional Highlights',
       highlightPoints: [
+        'CTO at DIGITAL CONTENT AND TECHNOLOGY TOP COMPANY LIMITED',
         'Experience in cross-platform Mobile App development using React Native.',
         'Strong proficiency in JavaScript, DOM manipulation, and the JavaScript object model.',
         'Thorough understanding of React.js, its core principles, and popular workflows (Flux/Redux).',

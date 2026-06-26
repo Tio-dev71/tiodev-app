@@ -121,7 +121,7 @@ export function ParallaxHero() {
               <span className="gradient-text">{t.hero.titleDeveloper}</span>
               <span className="text-white"> & </span>
               <span className="gradient-text">{t.hero.titleCrypto}</span>
-              <br />
+              <span className="text-white">  </span>
               <span className="text-white">{t.hero.titleBuilder}</span>
             </motion.h1>
 

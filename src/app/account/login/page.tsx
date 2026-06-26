@@ -70,9 +70,13 @@ function LoginContent() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
-            className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-500/20 to-cyan-500/20 border border-primary-500/20 flex items-center justify-center"
+            className="w-16 h-16 mx-auto mb-5"
           >
-            <Sparkles className="w-7 h-7 text-primary-400" />
+            <img 
+              src="/tiodevlogofull.png" 
+              alt="Tiodev Logo" 
+              className="w-full h-full object-cover rounded-[10px]" 
+            />
           </motion.div>
           <h1 className="text-3xl font-bold text-white mb-2">
             {mode === 'login' ? 'Chào mừng trở lại' : 'Tạo tài khoản'}
